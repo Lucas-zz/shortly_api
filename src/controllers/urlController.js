@@ -41,10 +41,11 @@ export async function getUrl(req, res) {
         `, [shortUrl]);
 
         if (result.rowCount === 0) {
+            console.log(result?.rows[0])
             return res.sendStatus(404);
         }
 
-        let count = result.rows[0].visitCount;
+        let count = result?.rows[0].visitCount;
 
         count++;
 
@@ -54,10 +55,13 @@ export async function getUrl(req, res) {
             WHERE shortUrl=$2
         `, [count, shortUrl]);
 
-        delete result.rows[0].userId;
-        delete result.rows[0].visitCount;
+        // delete result.rows[0].userId;
+        // delete result.rows[0].visitCount;
 
-        res.status(200).send(result.rows[0]);
+        const string = result?.rows[0].url;
+
+        res.redirect(string, [200]);
+        //res.status(200).send(result.rows[0]);
     } catch (error) {
         console.log(error);
         res.sendStatus(500);
