@@ -76,7 +76,7 @@ export async function getUserInfo(req, res) {
 
 		response.shortenedUrls = shortenedUrls;
 
-		res.send(response);
+		res.status(200).send(response);
 	} catch (error) {
 		console.log(error);
 		return res.sendStatus(500);
