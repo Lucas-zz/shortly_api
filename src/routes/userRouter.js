@@ -8,7 +8,7 @@ const userRouter = Router();
 
 userRouter.post('/users', validateSchemaMiddleware(userSchema), createUser);
 userRouter.get('/users', validateTokenMiddleware, getUser);
-userRouter.get('/user/:id', getUserInfo);
 userRouter.get('/users/ranking', getRanking);
+userRouter.get('/users/:id', getUserInfo);
 
 export default userRouter;
