@@ -29,7 +29,54 @@ export async function getUser(req, res) {
 	const { user } = res.locals;
 
 	try {
-		res.send(user);
+		res.status(200).send(user);
+	} catch (error) {
+		console.log(error);
+		return res.sendStatus(500);
+	}
+}
+
+export async function getUserInfo(req, res) {
+	const { id } = req.params;
+
+	try {
+		const { rows: user } = await db.query(`
+			SELECT
+				u.id,
+				u.name,
+				s.id,
+				s.shortUrl,
+				s.url,
+				s."visitCount"
+			FROM users u
+				JOIN "shortUrls" s ON u.id=s."userId"
+			WHERE u.id=$1
+		`, [id]);
+
+		if (user.length === 0) {
+			return res.sendStatus(404);
+		}
+
+		const response = {
+			id: user[0].id,
+			name: user[0].name,
+			visitCount: 0,
+			shortenedUrls: []
+		}
+
+		const shortenedUrls = user.map(row => {
+			response.visitCount += row.visitCount;
+			return {
+				id: row.id,
+				shortUrl: row.shorturl,
+				url: row.url,
+				visitCount: row.visitCount
+			}
+		});
+
+		response.shortenedUrls = shortenedUrls;
+
+		res.send(response);
 	} catch (error) {
 		console.log(error);
 		return res.sendStatus(500);
