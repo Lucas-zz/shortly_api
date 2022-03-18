@@ -5,7 +5,7 @@ export async function createUrl(req, res) {
     const { url } = req.body;
 
     const authorization = req.headers.authorization;
-    const token = authorization?.replace("Bearer", "");
+    const token = authorization?.replace("Bearer ", "");
 
     try {
         const users = await db.query(`
@@ -16,16 +16,16 @@ export async function createUrl(req, res) {
             return res.sendStatus(404);
         }
 
-        const userId = users.rows[0];
+        const { userId } = users.rows[0];
         const shortUrl = uuid().split("-")[0];
 
         await db.query(`
             INSERT INTO
-                "shortUrls"("shortUrl", url, "userId")
+                "shortUrls" (shorturl, url, "userId")
             VALUES ($1, $2, $3)
         `, [shortUrl, url, userId]);
 
-        res.sendStatus(201);
+        res.status(201).send(shortUrl);
     } catch (error) {
         console.log(error);
         return res.sendStatus(500);
@@ -37,12 +37,25 @@ export async function getUrl(req, res) {
 
     try {
         const result = await db.query(`
-            SELECT "shortUrls".id, "shortUrls"."shortUrl", "shortUrls".url FROM "shortUrls" WHERE "shortUrls"=$1
+            SELECT * FROM "shortUrls" WHERE shortUrl=$1
         `, [shortUrl]);
 
         if (result.rowCount === 0) {
             return res.sendStatus(404);
         }
+
+        let count = result.rows[0].visitCount;
+
+        count++;
+
+        await db.query(`
+            UPDATE "shortUrls"
+                SET "visitCount"=$1
+            WHERE shortUrl=$2
+        `, [count, shortUrl]);
+
+        delete result.rows[0].userId;
+        delete result.rows[0].visitCount;
 
         res.status(200).send(result.rows[0]);
     } catch (error) {
@@ -55,13 +68,18 @@ export async function deleteUrl(req, res) {
     const { id } = req.params;
 
     const authorization = req.headers.authorization;
-    const token = authorization?.replace("Bearer", "");
+    const token = authorization?.replace("Bearer ", "");
 
     try {
 
         const users = await db.query(`
-            SELECT "userId" FROM sessions WHERE token=$1
+        SELECT * FROM sessions WHERE token=$1
         `, [token]);
+
+        if (users.rowCount === 0) {
+            console.log(users.rows[0])
+            return res.sendStatus(404);
+        }
 
         const { userId } = users.rows[0];
 
