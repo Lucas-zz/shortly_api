@@ -5,6 +5,7 @@ import { validateTokenMiddleware } from "../middlewares/validateTokenMiddleware.
 import urlSchema from "../schemas/urlSchema.js";
 
 const urlRouter = Router();
+
 urlRouter.post('/urls/shorten', validateSchemaMiddleware(urlSchema), validateTokenMiddleware, createUrl);
 urlRouter.get('/urls/:shortUrl', getUrl);
 urlRouter.delete('/urls/:id', validateTokenMiddleware, deleteUrl);

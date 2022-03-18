@@ -4,5 +4,7 @@ import { validateSchemaMiddleware } from "../middlewares/validateSchemaMiddlewar
 import loginSchema from "../schemas/loginSchema.js";
 
 const authRouter = Router();
+
 authRouter.post('/login', validateSchemaMiddleware(loginSchema), login);
+
 export default authRouter;

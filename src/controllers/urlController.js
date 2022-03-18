@@ -77,7 +77,6 @@ export async function deleteUrl(req, res) {
         `, [token]);
 
         if (users.rowCount === 0) {
-            console.log(users.rows[0])
             return res.sendStatus(404);
         }
 
